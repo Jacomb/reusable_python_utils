@@ -71,7 +71,7 @@ def findCaller(srcfiles=[_srcfile], wrapper_depth=0):
     else:
         return "(Unknown file)", 0, "(Unknown function)"
     
-    # back_depthだけ更に遡る
+    # wrapper_depthだけ更に遡る
     for _ in range(wrapper_depth):
         f = f.f_back
         if hasattr(f, "f_code"):
