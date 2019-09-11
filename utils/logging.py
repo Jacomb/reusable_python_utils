@@ -30,10 +30,14 @@ import logging
 import logging.config
 from logging import DEBUG, INFO, WARNING, ERROR, CRITICAL
 
-
-# Load base config.
 FPATH_BASECONFIG = os.path.abspath(os.path.join(os.path.dirname(__name__), '..', 'logging.config'))
-logging.config.fileConfig(FPATH_BASECONFIG)
+def init_logging():
+    """ロガーを初期化する"""
+    logging.config.fileConfig(FPATH_BASECONFIG)
+
+def reset_logging():
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
 
 # define currentframe function.
 if hasattr(sys, '_getframe'):
@@ -112,7 +116,7 @@ def logput(msg, level=DEBUG, logger=None, func_name=None, wrapper_depth=0, **kar
     msg = '{} >> {}'.format(func_name, msg)    
     logger.log(level, msg, **kargs)
 
-def logging_fcuntion_decorator(level=DEBUG, logger=None):
+def logging_function_decorator(level=DEBUG, logger=None):
     """
     関数の入出力をロギングするデコレーター。
     """
