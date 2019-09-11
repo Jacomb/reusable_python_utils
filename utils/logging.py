@@ -31,6 +31,13 @@ import logging.config
 from logging import DEBUG, INFO, WARNING, ERROR, CRITICAL
 
 FPATH_BASECONFIG = os.path.abspath(os.path.join(os.path.dirname(__name__), '..', 'logging.config'))
+
+# logging_function_decoratorの引数logput_optionsへの入力値
+LOGPUT_OPTION_NO_ARGUMENTS          = 1
+LOGPUT_OPTION_NO_RETUEN_VALUES   = 2
+LOGPUT_OPTION_NO_TRACEBACK           = 4
+
+
 def init_logging():
     """ロガーを初期化する"""
     logging.config.fileConfig(FPATH_BASECONFIG)
@@ -116,21 +123,45 @@ def logput(msg, level=DEBUG, logger=None, func_name=None, wrapper_depth=0, **kar
     msg = '{} >> {}'.format(func_name, msg)    
     logger.log(level, msg, **kargs)
 
-def logging_function_decorator(level=DEBUG, logger=None):
+def logging_function_decorator(level=DEBUG, logger=None, logput_options=0):
     """
     関数の入出力をロギングするデコレーター。
+
+    Parameters
+    ----------
+    level: int
+        ロギングレベル。
+    logger: logger or str or None
+        ロガーを指定する。
+    logput_options: int
+        ログに出力する情報を制限する。ビットORで指定する。
+        LOGPUT_OPTION_NO_ARGUMENTS          : 関数実行前に引数をログ出力しない。
+        LOGPUT_OPTION_NO_RETUEN_VALUES   : 関数実行後に返値をログ出力しない。
+        LOGPUT_OPTION_NO_TRACEBACK           : エラー発生時にトレースバックをログ出力しない。
     """
     def decorator(func):
         logput_kargs = {'level':level, 'logger':logger, 'func_name':func.__name__}
         @functools.wraps(func)
         def logging_function(*args, **kargs):
-            logput('start. args:{}, kargs:{}'.format(args, kargs), **logput_kargs)
+            if logput_options & LOGPUT_OPTION_NO_ARGUMENTS != 0:
+                logput('start.', **logput_kargs)
+            else:
+                logput('start. args:{}, kargs:{}'.format(args, kargs), **logput_kargs)
+            
             try:
                 rv = func(*args, **kargs)
-            except:
-                logput('error happened.', exc_info=True, **logput_kargs)
+            except Exception as exc:
+                if logput_options & LOGPUT_OPTION_NO_TRACEBACK != 0:
+                    logput('error happened. exc:{}'.format(exc), **logput_kargs)
+                else:
+                    logput('error happened. exc:{}'.format(exc), exc_info=True, **logput_kargs)
                 raise
-            logput('end. retval:{}'.format(rv), **logput_kargs)
+            
+            if logput_options & LOGPUT_OPTION_NO_RETUEN_VALUES != 0:
+                logput('end.', **logput_kargs)
+            else:
+                logput('end. retval:{}'.format(rv), **logput_kargs)
+
             return rv
         return logging_function
     return decorator
