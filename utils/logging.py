@@ -150,11 +150,11 @@ def logging_function_decorator(level=DEBUG, logger=None, logput_options=0):
             
             try:
                 rv = func(*args, **kargs)
-            except Exception as exc:
+            except:
                 if logput_options & LOGPUT_OPTION_NO_TRACEBACK != 0:
-                    logput('error happened. exc:{}'.format(exc), **logput_kargs)
+                    logput('error happened.' **logput_kargs)
                 else:
-                    logput('error happened. exc:{}'.format(exc), exc_info=True, **logput_kargs)
+                    logput('error happened.', exc_info=True, **logput_kargs)
                 raise
             
             if logput_options & LOGPUT_OPTION_NO_RETUEN_VALUES != 0:
