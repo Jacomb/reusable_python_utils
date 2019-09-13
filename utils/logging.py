@@ -106,9 +106,9 @@ def logput(msg, level=DEBUG, logger=None, func_name=None, wrapper_depth=0, **kar
     logger: logger or str or None
         ロガーを指定する。
     func_name: str or None
-        メッセージに付与する関数名。Noneであれば自動取得する。
+        フォーマットreal_funcNameに指定した関数名を埋め込む。Noneであれば関数名を自動取得する。
     wrapper_depth: int
-        func_name=Noneのとき、呼出元の関数名を取得するため、この関数をラップしている関数の数を指定する。
+        func_name=Noneのとき、logputをラップしている関数の数を指定する。
     **kargs: dict
         その他logger.logの引数を自由に指定できる。
     """
@@ -119,8 +119,12 @@ def logput(msg, level=DEBUG, logger=None, func_name=None, wrapper_depth=0, **kar
     
     if func_name is None:
         func_name = findCaller(wrapper_depth=wrapper_depth)[2]
+        
+    extra = {'real_funcName': func_name}
+    if 'extra' not in kargs:
+        kargs['extra'] = dict()
+    kargs['extra'].update(extra)
     
-    msg = '{} >> {}'.format(func_name, msg)    
     logger.log(level, msg, **kargs)
 
 def logging_function_decorator(level=DEBUG, logger=None, logput_options=0):
